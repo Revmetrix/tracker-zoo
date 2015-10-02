@@ -131,7 +131,9 @@ $(function () {
     },
     ga_track_pageview: function (title) {
       ga('set', 'title', title);
-      ga('send', 'pageview');
+      ga('send', 'pageview', {
+        'page': location.pathname + location.search  + location.hash
+      });
     },
     ga_track_add_item: function (itemId, itemName) {
       ga('ecommerce:addItem', {
@@ -146,7 +148,7 @@ $(function () {
     segmentio_track_pageview: function (title) {
       analytics.page(title, {
           'title': title,
-          path: location.pathname + location.hash
+          path: location.pathname + location.search + location.hash
       });
     },
     segmentio_track_add_item: function (itemId, itemName) {
