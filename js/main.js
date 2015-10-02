@@ -61,6 +61,7 @@ $(function () {
       this.$detailedView = $('.tz-view-details');
       this.$addToCart = $('.tz-add-to-cart');
       this.$checkout = $('#checkout-main');
+      this.$home = $('.tz-home');
     },
     bindElements: function () {
       this.$login.on('click', this.login.bind(this));
@@ -68,6 +69,7 @@ $(function () {
       this.$detailedView.on('click', this.detailView.bind(this));
       this.$addToCart.on('click', this.addToCart.bind(this));
       this.$checkout.on('click', this.checkout.bind(this));
+      this.$home.on('click', this.home.bind(this));
     },
     render: function () {
       util.store('tracker-zoo-cart', this.cart);
@@ -119,6 +121,11 @@ $(function () {
       this.ga_track_checkout();
       this.segmentio_track_checkout();
       this.cart = [];
+      this.render();
+    },
+    home: function () {
+      this.ga_track_pageview('Home');
+      this.segmentio_track_pageview('Home');
       this.render();
     },
     getCartTotal: function () {
