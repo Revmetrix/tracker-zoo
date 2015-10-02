@@ -175,6 +175,4 @@ $(function () {
 
   App.init();
   window.tzApp = App;
-  tzApp.ga_track_pageview('*');
-  tzApp.segmentio_track_pageview('*');
 });
