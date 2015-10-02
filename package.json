@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "dependencies": {
+    "handlebars": "~2.0.0",
+    "director": "~1.2.2"
+  }
+}
