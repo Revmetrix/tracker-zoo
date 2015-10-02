@@ -1,100 +1,169 @@
 
 $(function () {
-    'use strict';
+  'use strict';
 
-    var util = {
-        store: function (namespace, data) {
-                    if (arguments.length > 1) {
-                        return localStorage.setItem(namespace, JSON.stringify(data));
-                    } else {
-                        var store = localStorage.getItem(namespace);
-                        return (store && JSON.parse(store)) || [];
-                    }
-                }
-    };
+  var util = {
+    uuid: function () {
+      /*jshint bitwise:false */
+      var i, random;
+      var uuid = '';
 
-    var App = {
-        init: function () {
-          this.cart = util.store('tracker-zoo-cart');
-          this.cacheElements();
-          this.bindElements();
-        },
-        cacheElements: function () {
-          this.$login = $('#login');
-          this.$quickView = $('.rev-quick-view');
-          this.$detailedView = $('.rev-view-details');
-          this.$addToCart = $('.rev-add-to-cart');
-          this.$checkout = $('#checkout-main');
-        },
-        bindElements: function () {
-          this.$login.on('click', this.login.bind(this));
-          this.$quickView.on('click', this.quickView.bind(this));
-        },
-        login: function (e) {
-          console.log(e);
+      for (i = 0; i < 32; i++) {
+        random = Math.random() * 16 | 0;
+        if (i === 8 || i === 12 || i === 16 || i === 20) {
+          uuid += '-';
         }
-        quickView: function (e) {
-          var pageTitle = e.target.dataset.productName;
-          this.ga_track_pageview(productName);
-          this.segmentio_track_pageview(productName);
-        },
-        ga_track_pageview: function (title) {
-            ga('set', 'title', title);
-            ga('send', 'pageview');
-        },
-        ga_track_add_item: function (itemId, itemName) {
-            ga('ecommerce:addItem', {
-                'id': itemId,
-                'name': itemName
-            });
-        },
-        segmentio_track_pageview: function (title) {
-            analytics.page({
-                'name': title
-            });
-        }
-        segmentio_track_add_item: function (itemId, itemName) {
-            analytics.track('Added Product', {
-                id: itemId,
-                name: itemName
-            });
-        }
-    };
+        uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16);
+      }
 
-    App.init();
+      return uuid;
+    },
+    store: function (namespace, data) {
+      if (arguments.length > 1) {
+          return localStorage.setItem(namespace, JSON.stringify(data));
+      } else {
+          var store = localStorage.getItem(namespace);
+          return (store && JSON.parse(store)) || [];
+      }
+    }
+  };
 
-    // $('.rev-quick-view').click(function (event) {
-    //     var productName = event.target.dataset.productName;
-    //     // GA
-    //     ga_track_pageview(productName);
+  var App = {
+    PRODUCTS: {
+      p1: {
+        id: 'p1',
+        name: 'Product 1',
+        price: 10
+      },
+      p2: {
+        id: 'p2',
+        name: 'Product 2',
+        price: 20
+      },
+      p3: {
+        id: 'p3',
+        name: 'Product 3',
+        price: 30
+      }
+    },
 
-    //     // Segment
-    //     segmentio_track_pageview(productName);
-    // });
-
-    $('.rev-view-details').click(function (event) {
-        var productName = event.target.dataset.productName;
-        ga_track_pageview(productName);
-        segmentio_track_pageview(productName);
-    });
-
-    $('.rev-add-to-cart').click(function (event) {
-        var itemId = event.target.dataset.productId,
-            itemName = event.target.dataset.productName;
-
-        // GA
-        ga_track_pageview(productName);
-        ga_track_add_item(itemId, productName);
-
-        // Segment
-        segmentio_track_add_item(itemId, productName);
-    });
-
-    $('#login').click(function () {
-        var identifier = $('input[name="identifier"]').val();
-        // GA
+    init: function () {
+      this.cart = [];
+      this.userId = null;
+      this.sessionId = util.uuid();
+      this.cacheElements();
+      this.bindElements();
+      this.render();
+    },
+    cacheElements: function () {
+      this.$login = $('#login');
+      this.$quickView = $('.rev-quick-view');
+      this.$detailedView = $('.rev-view-details');
+      this.$addToCart = $('.rev-add-to-cart');
+      this.$checkout = $('#checkout-main');
+    },
+    bindElements: function () {
+      this.$login.on('click', this.login.bind(this));
+      this.$quickView.on('click', this.quickView.bind(this));
+      this.$detailedView.on('click', this.detailView.bind(this));
+      this.$addToCart.on('click', this.addToCart.bind(this));
+      this.$checkout.on('click', this.checkout.bind(this));
+    },
+    render: function () {
+      util.store('tracker-zoo-cart', this.cart);
+      util.store('tracker-zoo-user-id', this.userId);
+    },
+    login: function (e) {
+      var identifier = $('input[name="identifier"]').val();
+      if (!_.isEmpty(identifier)) {
+        this.userId = identifier;
+      }
+      if (!_.isEmpty(this.userId)) {
         ga('set', 'userId', identifier);
-        // Segment
-        analytics.identify(identifier, {'name': identifier});
-    });
+      }
+      analytics.identify(identifier, {
+        userId: this.userId,
+        anonymousId: this.sessionId,
+        traits: {
+          name: this.userId,
+        }
+      });
+      this.render();
+    },
+    quickView: function (e) {
+      var productId = e.target.dataset.productId;
+      var pageTitle = this.PRODUCTS[productId].name;
+      this.ga_track_pageview(pageTitle);
+      this.segmentio_track_pageview(pageTitle);
+      this.render();
+    },
+    detailView: function (e) {
+      var productId = e.target.dataset.productId;
+      var pageTitle = this.PRODUCTS[productId].name;
+      this.ga_track_pageview(pageTitle);
+      this.segmentio_track_pageview(pageTitle);
+      this.render();
+    },
+    addToCart: function (e) {
+      var itemId = e.target.dataset.productId;
+      var product = this.PRODUCTS[itemId];
+      var itemName = product.name;
+      this.cart.push(product);
+      this.ga_track_pageview(itemName);
+      this.ga_track_add_item(itemId, itemName);
+      this.segmentio_track_pageview(itemName);
+      this.segmentio_track_add_item(itemId, itemName);
+      this.render();
+    },
+    checkout: function (e) {
+      this.ga_track_checkout();
+      this.segmentio_track_checkout();
+      this.cart = [];
+      this.render();
+    },
+    getCartTotal: function () {
+      return _(this.cart).chain()
+        .map(function (item) {
+          return item.price
+        }).reduce(function (sum, v) {
+          return sum + v
+        }, 0);
+    },
+    ga_track_pageview: function (title) {
+      ga('set', 'title', title);
+      ga('send', 'pageview');
+    },
+    ga_track_add_item: function (itemId, itemName) {
+      ga('ecommerce:addItem', {
+          'id': itemId,
+          'name': itemName
+      });
+    },
+    ga_track_checkout: function () {
+      ga('ecommerce:send');
+      ga('ecommerce:clear');
+    },
+    segmentio_track_pageview: function (title) {
+      analytics.page(title, {
+          'title': title,
+          path: location.pathname + location.hash
+      });
+    },
+    segmentio_track_add_item: function (itemId, itemName) {
+      analytics.track('Added Product', {
+          id: itemId,
+          name: itemName
+      });
+    },
+    segmentio_track_checkout: function () {
+      analytics.track('Completed Order', {
+        orderId: util.uuid(),
+        total: this.getCartTotal(),
+        products: this.cart
+      });
+    }
+  };
+
+  App.init();
+
 });
