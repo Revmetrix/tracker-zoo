@@ -57,9 +57,9 @@ $(function () {
     },
     cacheElements: function () {
       this.$login = $('#login');
-      this.$quickView = $('.rev-quick-view');
-      this.$detailedView = $('.rev-view-details');
-      this.$addToCart = $('.rev-add-to-cart');
+      this.$quickView = $('.tz-quick-view');
+      this.$detailedView = $('.tz-view-details');
+      this.$addToCart = $('.tz-add-to-cart');
       this.$checkout = $('#checkout-main');
     },
     bindElements: function () {
