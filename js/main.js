@@ -54,6 +54,15 @@ $(function () {
       this.cacheElements();
       this.bindElements();
       this.render();
+
+      this.router = new Router({
+        '/': this.home.bind(this),
+        '/qv/:pid': this.quickView.bind(this),
+        '/fv/:pid': this.detailView.bind(this),
+        '/add/:pid': this.addToCart.bind(this),
+        '/checkout': this.checkout.bind(this)
+      });
+      this.router.init('/');
     },
     cacheElements: function () {
       this.$login = $('#login');
@@ -65,11 +74,6 @@ $(function () {
     },
     bindElements: function () {
       this.$login.on('click', this.login.bind(this));
-      this.$quickView.on('click', this.quickView.bind(this));
-      this.$detailedView.on('click', this.detailView.bind(this));
-      this.$addToCart.on('click', this.addToCart.bind(this));
-      this.$checkout.on('click', this.checkout.bind(this));
-      this.$home.on('click', this.home.bind(this));
     },
     render: function () {
       util.store('tracker-zoo-cart', this.cart);
@@ -92,22 +96,19 @@ $(function () {
       });
       this.render();
     },
-    quickView: function (e) {
-      var productId = e.target.dataset.productId;
+    quickView: function (productId) {
       var pageTitle = this.PRODUCTS[productId].name;
       this.ga_track_pageview(pageTitle);
       this.segmentio_track_pageview(pageTitle);
       this.render();
     },
-    detailView: function (e) {
-      var productId = e.target.dataset.productId;
+    detailView: function (productId) {
       var pageTitle = this.PRODUCTS[productId].name;
       this.ga_track_pageview(pageTitle);
       this.segmentio_track_pageview(pageTitle);
       this.render();
     },
-    addToCart: function (e) {
-      var itemId = e.target.dataset.productId;
+    addToCart: function (itemId) {
       var product = this.PRODUCTS[itemId];
       var itemName = product.name;
       this.cart.push(product);
@@ -117,7 +118,7 @@ $(function () {
       this.segmentio_track_add_item(itemId, itemName);
       this.render();
     },
-    checkout: function (e) {
+    checkout: function () {
       this.ga_track_checkout();
       this.segmentio_track_checkout();
       this.cart = [];
