@@ -113,9 +113,9 @@ $(function () {
       var itemName = product.name;
       this.cart.push(product);
       this.ga_track_pageview(itemName);
-      this.ga_track_add_item(itemId, itemName);
+      this.ga_track_add_item(product);
       this.segmentio_track_pageview(itemName);
-      this.segmentio_track_add_item(itemId, itemName);
+      this.segmentio_track_add_item(product);
       this.render();
     },
     checkout: function () {
@@ -143,13 +143,19 @@ $(function () {
         'page': location.pathname + location.search  + location.hash
       });
     },
-    ga_track_add_item: function (itemId, itemName) {
+    ga_track_add_item: function (product) {
       ga('ecommerce:addItem', {
-          'id': itemId,
-          'name': itemName
+          'id': product.id,
+          'name': product.name,
+          'price': product.price
       });
     },
     ga_track_checkout: function () {
+      ga('ecommerce:addTransaction', {
+        id: util.uuid(),
+        affiliation: 'Tracker Zoo',
+        revenue: this.getCartTotal()
+      });
       ga('ecommerce:send');
       ga('ecommerce:clear');
     },
@@ -159,10 +165,11 @@ $(function () {
           path: location.pathname + location.search + location.hash
       });
     },
-    segmentio_track_add_item: function (itemId, itemName) {
+    segmentio_track_add_item: function (product) {
       analytics.track('Added Product', {
-          id: itemId,
-          name: itemName
+          id: product.id,
+          name: product.name,
+          price: product.price
       });
     },
     segmentio_track_checkout: function () {
