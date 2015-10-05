@@ -113,7 +113,6 @@ $(function () {
       var itemName = product.name;
       this.cart.push(product);
       this.ga_track_pageview(itemName);
-      this.ga_track_add_item(product);
       this.segmentio_track_pageview(itemName);
       this.segmentio_track_add_item(product);
       this.render();
@@ -147,7 +146,8 @@ $(function () {
       ga('ecommerce:addItem', {
           'id': product.id,
           'name': product.name,
-          'price': product.price
+          'price': product.price,
+          'quantity': 1
       });
     },
     ga_track_checkout: function () {
@@ -156,6 +156,7 @@ $(function () {
         affiliation: 'Tracker Zoo',
         revenue: this.getCartTotal()
       });
+      _.each(this.cart, function (product) { this.ga_track_add_item(product); });
       ga('ecommerce:send');
       ga('ecommerce:clear');
     },
@@ -169,7 +170,8 @@ $(function () {
       analytics.track('Added Product', {
           id: product.id,
           name: product.name,
-          price: product.price
+          price: product.price,
+          quantity: 1
       });
     },
     segmentio_track_checkout: function () {
