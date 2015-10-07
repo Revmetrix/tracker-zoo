@@ -151,12 +151,13 @@ $(function () {
       });
     },
     ga_track_checkout: function () {
+      var self = this;
       ga('ecommerce:addTransaction', {
         id: util.uuid(),
         affiliation: 'Tracker Zoo',
         revenue: this.getCartTotal()
       });
-      _.each(this.cart, function (product) { this.ga_track_add_item(product); });
+      _.each(this.cart, function (product) { self.ga_track_add_item(product); });
       ga('ecommerce:send');
       ga('ecommerce:clear');
     },
